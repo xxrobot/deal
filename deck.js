@@ -460,7 +460,9 @@ function shuffle(array) {
         array[j] = temp;
     }
     // return array;
-    shuffled = array;
+    derp = array;
+    console.log(derp);
+console.log('helo');
 }
 
 function makeDeck(deck){
@@ -470,7 +472,7 @@ function makeDeck(deck){
 			stack.push(deck[i]);
 		}
 	}
-	
+	console.log(derp);
 }
 
 function printAllCards(deck){
