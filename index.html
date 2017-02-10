@@ -69,12 +69,15 @@
         margin: 5px;
         padding: 2px;
         text-align: center;
-            flex-shrink: 0;
+        flex-shrink: 0;
     }
-
-    .card > .desc {font-size: .5em;}
-
-    .myBoard, #myHand{
+    
+    .card > .desc {
+        font-size: .5em;
+    }
+    
+    .myBoard,
+    #myHand {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -85,11 +88,12 @@
         justify-content: center;
         text-align: center;
     }
-
-    #myPlayed{
+    
+    #myPlays{
         display: flex;
     }
-    #myBank{
+    
+    #myBank {
         justify-content: center;
         display: flex;
     }
@@ -97,22 +101,20 @@
     .inPlay {
         flex-grow: 2;
     }
-
-    #myHand{
+    
+    #myHand {
         text-align: center;
         justify-content: center;
         display: flex;
     }
-
-    .myHand .card{
-
-    }
-
-    .flex-container{
+    
+    .myHand .card {}
+    
+    .flex-container {
         display: flex;
     }
-
-    .chat-input{
+    
+    .chat-input {
         flex-grow: 1;
     }
     </style>
@@ -126,10 +128,14 @@
     <a href="#" id="drawCards">Draw Cards</a>
     <hr>
     <div id="debug"></div>
+    <div class="stats">
+    Turn: <div id="turn"></div>
+    Action: <div id="action"></div>
+    </div>
     <div class="myBoard">
         <div class="inPlay">
             <h2>In Play</h2>
-            <div id="myPlayed">
+            <div id="myPlays">
                 <div class="card"></div>
                 <div class="card"></div>
             </div>
@@ -141,8 +147,8 @@
             </div>
         </div>
     </div>
-        <h2>My Hand</h2>
-    <div class="inHand">        
+    <h2>My Hand</h2>
+    <div class="inHand">
         <div id="myHand"></div>
     </div>
     <hr>Players
@@ -151,7 +157,7 @@
     <div class="chat">
         <ul id="messages"></ul>
         <form action="" class="flex-container">
-            <input id="m" autocomplete="off" class="chat-input"/>
+            <input id="m" autocomplete="off" class="chat-input" />
             <button>Send</button>
         </form>
     </div>
@@ -162,24 +168,38 @@
     var board = {
         myHand: [],
         myBank: [],
-        players: []
+        myPlays: [],
+        players: [],
+        myActions: 0,
+        turn: ''
     };
     const messages = document.getElementById('messages');
 
     function updateBoard() {
-        function actions(type,arrayPosition){
-            if(type == 'money')
-             return '<a href="#" onClick="addToBank('+i+')">Add to bank</a>';
+
+        function actions(type, arrayPosition) {
+            switch (type) {
+                case 'money':
+                    return '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
+                    break;
+                case 'action':
+                    return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>' +
+                           '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
+                    break;
+                case 'property':
+                    return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>';;
+                    break;
+            }
         }
         $('#myHand').empty();
         for (var i = 0; i < board.myHand.length; i++) {
-            
-            $('#myHand').append('<div class="card '+board.myHand[i].type+'">' + 
+
+            $('#myHand').append('<div class="card ' + board.myHand[i].type + '">' +
                 board.myHand[i].name +
                 '<div class="desc">' + board.myHand[i].desc + '</div>' +
                 '<div class="actions">' +
-                actions(board.myHand[i].type, i) + 
-                '</div>'+
+                actions(board.myHand[i].type, i) +
+                '</div>' +
                 '</div>');
         }
 
@@ -190,22 +210,49 @@
 
         $('#myBank').empty();
         for (var i = 0; i < board.myBank.length; i++) {
-            
-            $('#myBank').append('<div class="card '+board.myBank[i].type+'">' + 
+
+            $('#myBank').append('<div class="card ' + board.myBank[i].type + '">' +
                 board.myBank[i].name +
                 '<div class="desc">' + board.myBank[i].desc + '</div>' +
                 '<div class="actions">' +
                 //actions(board.myHand[i].type, i) + 
-                '</div>'+
+                '</div>' +
                 '</div>');
         }
+
+        $('#myPlays').empty();
+        for (var i = 0; i < board.myPlays.length; i++) {
+
+            $('#myPlays').append('<div class="card ' + board.myPlays[i].type + '">' +
+                board.myPlays[i].name +
+                '<div class="desc">' + board.myPlays[i].desc + '</div>' +
+                '<div class="actions">' +
+                //actions(board.myHand[i].type, i) + 
+                '</div>' +
+                '</div>');
+        }
+
+        $('#action').html(board.myActions);
+        $('#turn').html(board.turn);
+       
     }
 
-    function addToBank(arrayPosition){
-        var card = board.myHand.splice(arrayPosition,1);
+    function addToBank(arrayPosition) {
+        var card = board.myHand.splice(arrayPosition, 1);
         console.log('attempt to move array position to bank');
         console.log(card[0])
         board.myBank.push(card[0]);
+        board.myActions++;
+        updateBoard();
+    }
+
+    function playCard(arrayPosition) {
+        var card = board.myHand.splice(arrayPosition, 1);
+        console.log('attempt to play card');
+        console.log(card[0])
+        board.myPlays.push(card[0]);
+        board.myActions++;
+        socket.emit('play', card[0]);
         updateBoard();
     }
 
@@ -250,7 +297,10 @@
     // make new game
     $('#drawCards').click(function() {
         socket.emit('chat message', "player " + socket.id + ' wants cards');
-        drawCards(5);
+
+        board.myHand.length===0 && drawCards(5);
+        board.myHand.length>0 && drawCards(2);
+        
         return false;
     });
 

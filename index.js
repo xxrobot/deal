@@ -6,7 +6,9 @@ var socketUsers = require('socket.io.users');
 //var deck = require( "./js/backend.js" );
 
 var deck = [];
-
+var game = {
+    players: []
+}
 
 app.get('/', function(req, res) {
     res.sendfile('index.html');
@@ -18,14 +20,16 @@ app.get('/js/frontend.js', function(req, res) {
 
 io.on('connection', function(socket) {
 
+    //add players to game object
+    // console.log("new connection" + socket.id);
+    game.players.push(socket.id);
+
     var allConnectedClients = Object.keys(io.sockets.connected);
     // console.log('players' + allConnectedClients);
     io.emit('players', allConnectedClients);
     // console.log(io.sockets);
 
-});
 
-io.on('connection', function(socket) {
     socket.on('chat message', function(msg) {
         io.emit('chat message', socket.id + ": " + msg);
     });
@@ -47,12 +51,17 @@ io.on('connection', function(socket) {
             if (deck.length > 1) {
                 cards.push(deck.shift());
             } else {
-                console.log("no more cards");
+                io.emit('chat message', "no more cards! start a new game first");
             }
         }
 
-        socket.emit('chat message', socket.id + " is given new cards " + cards);
+        io.emit('chat message', socket.id + " is given new cards " + cards);
         socket.emit('receiveCards', cards);
+    });
+
+
+    socket.on('play', function(card) {
+        game.players.socket.id.inPlay.push(card);
     });
 });
 
