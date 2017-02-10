@@ -7,7 +7,8 @@ var socketUsers = require('socket.io.users');
 
 var deck = [];
 var game = {
-    players: []
+    players: {},
+    center: []
 }
 
 app.get('/', function(req, res) {
@@ -22,7 +23,9 @@ io.on('connection', function(socket) {
 
     //add players to game object
     // console.log("new connection" + socket.id);
-    game.players.push(socket.id);
+    var id = socket.id;
+    game.players[id] = { inPlay: [] };
+    // console.log(game.players);
 
     var allConnectedClients = Object.keys(io.sockets.connected);
     // console.log('players' + allConnectedClients);
@@ -46,7 +49,7 @@ io.on('connection', function(socket) {
 
         var cards = [];
         for (var i = 0; i < qty; i++) {
-            console.log(cards);
+            // console.log(cards);
 
             if (deck.length > 1) {
                 cards.push(deck.shift());
@@ -61,8 +64,21 @@ io.on('connection', function(socket) {
 
 
     socket.on('play', function(card) {
-        game.players.socket.id.inPlay.push(card);
+        console.log(socket.id + "has played this card");
+        if (card.type == 'property') {
+            game.players[socket.id].inPlay.push(card);
+            console.log(game.players[socket.id].inPlay);
+        }
+
+        if (card.type == 'action') {
+            game.center.splice(0,0,card);
+        }
+
+        console.log('sending game data');
+        console.log(game);
+        io.emit('updateBoard',game);
     });
+
 });
 
 // Socket Users
@@ -167,15 +183,15 @@ const CARDS = [{
     desc: 'Swap any property with another player. (cannot be part of a full set)',
     qty: 3
 }, {
-    type: 'action',
-    subtype: '',
+    type: 'property',
+    subtype: 'hotel',
     name: 'Hotel',
     bankValue: 4,
     desc: 'Add onto any full set you want to add M4 to the rent value (Except railroads and utilities)',
     qty: 2
 }, {
-    type: 'action',
-    subtype: '',
+    type: 'property',
+    subtype: 'house',
     name: 'House',
     bankValue: 3,
     desc: 'Add onto any full set you want to add M3 to the rent value (Except railroads and utilities)',

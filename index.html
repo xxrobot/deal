@@ -89,7 +89,7 @@
         text-align: center;
     }
     
-    #myPlays{
+    #myPlays {
         display: flex;
     }
     
@@ -102,7 +102,7 @@
         flex-grow: 2;
     }
     
-    #myHand {
+    #myHand, #center {
         text-align: center;
         justify-content: center;
         display: flex;
@@ -117,6 +117,11 @@
     .chat-input {
         flex-grow: 1;
     }
+
+    .action{border: 1px solid orange;}
+    .property{border: 1px solid black;}
+    .money{border: 1px solid black;}
+
     </style>
     <link rel="css/stylesheet" href="style.css">
     <script src="js/frontend.js"></script>
@@ -128,9 +133,12 @@
     <a href="#" id="drawCards">Draw Cards</a>
     <hr>
     <div id="debug"></div>
+    <div id="center">center</div>
     <div class="stats">
-    Turn: <div id="turn"></div>
-    Action: <div id="action"></div>
+        Turn:
+        <div id="turn"></div>
+        Action:
+        <div id="action"></div>
     </div>
     <div class="myBoard">
         <div class="inPlay">
@@ -173,6 +181,8 @@
         myActions: 0,
         turn: ''
     };
+
+
     const messages = document.getElementById('messages');
 
     function updateBoard() {
@@ -184,7 +194,7 @@
                     break;
                 case 'action':
                     return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>' +
-                           '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
+                        '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
                     break;
                 case 'property':
                     return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>';;
@@ -234,7 +244,20 @@
 
         $('#action').html(board.myActions);
         $('#turn').html(board.turn);
-       
+    }
+
+    function updateGame(game){
+
+        console.log(game.center[0]);
+     // $('#center').html(game.center[0].name);   
+     $('#center').html('<div class="card ' + game.center[0].type + '">' +
+                game.center[0].name +
+                '<div class="desc">' + game.center[0].desc + '</div>' +
+                '</div>');   
+    }
+
+    function endTurn() {
+        socket.emit('chat message', socket.id + "'s turn is over");
     }
 
     function addToBank(arrayPosition) {
@@ -243,16 +266,26 @@
         console.log(card[0])
         board.myBank.push(card[0]);
         board.myActions++;
+        board.myActions > 3 && endTurn();
         updateBoard();
     }
 
     function playCard(arrayPosition) {
+
         var card = board.myHand.splice(arrayPosition, 1);
         console.log('attempt to play card');
         console.log(card[0])
-        board.myPlays.push(card[0]);
+
+        if (card[0].type == 'action') {
+            // game.center.push(card[0])
+            socket.emit('chat message', card[0].name + 'played');
+        } else {
+            board.myPlays.push(card[0]);
+        }
+
         board.myActions++;
         socket.emit('play', card[0]);
+        board.myActions > 3 && endTurn();
         updateBoard();
     }
 
@@ -298,9 +331,9 @@
     $('#drawCards').click(function() {
         socket.emit('chat message', "player " + socket.id + ' wants cards');
 
-        board.myHand.length===0 && drawCards(5);
-        board.myHand.length>0 && drawCards(2);
-        
+        board.myHand.length === 0 && drawCards(5);
+        board.myHand.length > 0 && drawCards(2);
+
         return false;
     });
 
@@ -336,6 +369,13 @@
 
         updateBoard();
     });
+
+
+    socket.on('updateBoard', function(game) {
+        // console.log(game);
+        updateGame(game);
+    });
+
 
     function findClientsSocket(roomId, namespace) {
         var res = []

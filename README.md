@@ -6,11 +6,14 @@ Chat: Socket.IO
 # Installation
 Run `npm install`
 
-run `node index`
+To run use `node --use-strict index`
 
-visit localhost
+visit localhost:3000
+Click "New Game"
+Click "Draw Cards"
 
 #Vocabulary
+const CARDS: unique individual cards
 
-deck: stack of cards, generated and in order
-stack: shuffled cards
+When you click "New Game"
+`makeDeck()` is called and makes the duplicate cards. This gets saved to `deck`. Then that get shuffled.
