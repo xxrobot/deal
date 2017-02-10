@@ -4,6 +4,7 @@
   "description": "Online multiplayer Monopoly Deal",
   "dependencies": {
     "express": "^4.14.1",
-    "socket.io": "^1.7.2"
+    "socket.io": "^1.7.2",
+    "socket.io.users": "^2.0.2"
   }
 }

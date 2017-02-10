@@ -1,39 +1,313 @@
 <!doctype html>
 <html>
-  <head>
+
+<head>
     <title>Monopoly Deal Online</title>
     <style>
-      
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
-        <link rel="css/stylesheet" href="style.css">
-	<script src="js/deck.js"></script>
-  </head>
-  <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-<script>
-  var socket = io();
-  $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
-    $('#m').val('');
-    return false;
-  });
-  socket.on('chat message', function(msg){
-    $('#messages').append($('<li>').text(msg));
-  });
-</script>
+    body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Helvetica';
+        margin-bottom: 112px;
+    }
+    
+    .chat {
+        overflow: hidden;
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        max-height: 200px;
+        position: fixed;
+    }
+    
+    form {
+        background: #000;
+        padding: 3px;
+        width: 100%;
+        bottom: 0;
+    }
+    
+    form input {
+        border: 0;
+        padding: 10px;
+        width: 80%;
+        margin-right: .5%;
+    }
+    
+    form button {
+        background: rgb(130, 224, 255);
+        border: none;
+        padding: 10px;
+    }
+    
+    #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        height: 112px;
+        overflow-y: auto;
+    }
+    
+    #messages li {
+        padding: 5px 10px;
+    }
+    
+    #messages li:nth-child(odd) {
+        background: #eee;
+    }
+    
+    #messages li:nth-child(even) {
+        background: #fff;
+    }
+    
+    .card {
+        width: 100px;
+        background-color: gray;
+        border-radius: 4px;
+        height: 150px;
+        margin: 5px;
+        padding: 2px;
+        text-align: center;
+            flex-shrink: 0;
+    }
 
-  </body>
+    .card > .desc {font-size: .5em;}
+
+    .myBoard, #myHand{
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .bank {
+        flex-grow: 1;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #myPlayed{
+        display: flex;
+    }
+    #myBank{
+        justify-content: center;
+        display: flex;
+    }
+    
+    .inPlay {
+        flex-grow: 2;
+    }
+
+    #myHand{
+        text-align: center;
+        justify-content: center;
+        display: flex;
+    }
+
+    .myHand .card{
+
+    }
+
+    .flex-container{
+        display: flex;
+    }
+
+    .chat-input{
+        flex-grow: 1;
+    }
+    </style>
+    <link rel="css/stylesheet" href="style.css">
+    <script src="js/frontend.js"></script>
+</head>
+
+<body>
+    <a href="#" id="newgame">New Game</a>
+    <hr> Deck
+    <a href="#" id="drawCards">Draw Cards</a>
+    <hr>
+    <div id="debug"></div>
+    <div class="myBoard">
+        <div class="inPlay">
+            <h2>In Play</h2>
+            <div id="myPlayed">
+                <div class="card"></div>
+                <div class="card"></div>
+            </div>
+        </div>
+        <div class="bank">
+            <h2>My Bank</h2>
+            <div id="myBank">
+                <div class="card"></div>
+            </div>
+        </div>
+    </div>
+        <h2>My Hand</h2>
+    <div class="inHand">        
+        <div id="myHand"></div>
+    </div>
+    <hr>Players
+    <div id="players">Players</div>
+    <hr>
+    <div class="chat">
+        <ul id="messages"></ul>
+        <form action="" class="flex-container">
+            <input id="m" autocomplete="off" class="chat-input"/>
+            <button>Send</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    var deck = 1;
+    var board = {
+        myHand: [],
+        myBank: [],
+        players: []
+    };
+    const messages = document.getElementById('messages');
+
+    function updateBoard() {
+        function actions(type,arrayPosition){
+            if(type == 'money')
+             return '<a href="#" onClick="addToBank('+i+')">Add to bank</a>';
+        }
+        $('#myHand').empty();
+        for (var i = 0; i < board.myHand.length; i++) {
+            
+            $('#myHand').append('<div class="card '+board.myHand[i].type+'">' + 
+                board.myHand[i].name +
+                '<div class="desc">' + board.myHand[i].desc + '</div>' +
+                '<div class="actions">' +
+                actions(board.myHand[i].type, i) + 
+                '</div>'+
+                '</div>');
+        }
+
+        $('#players').empty();
+        for (var i = 0; i < board.players.length; i++) {
+            $('#players').append($('<li>').text(board.players));
+        }
+
+        $('#myBank').empty();
+        for (var i = 0; i < board.myBank.length; i++) {
+            
+            $('#myBank').append('<div class="card '+board.myBank[i].type+'">' + 
+                board.myBank[i].name +
+                '<div class="desc">' + board.myBank[i].desc + '</div>' +
+                '<div class="actions">' +
+                //actions(board.myHand[i].type, i) + 
+                '</div>'+
+                '</div>');
+        }
+    }
+
+    function addToBank(arrayPosition){
+        var card = board.myHand.splice(arrayPosition,1);
+        console.log('attempt to move array position to bank');
+        console.log(card[0])
+        board.myBank.push(card[0]);
+        updateBoard();
+    }
+
+    function scrollToBottom() {
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+
+    var socket = io();
+    $('form').submit(function() {
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+    });
+
+
+    socket.on('chat message', function(msg) {
+        $('#messages').append($('<li>').text(msg));
+
+        shouldScroll = messages.scrollTop + messages.clientHeight === messages.scrollHeight;
+
+        // console.log(shouldScroll + "" + (messages.scrollTop + messages.clientHeight) +" "+ messages.scrollHeight);
+
+        //figure out if scroll position is the bottom
+        /*
+         * Get your messages, we'll just simulate it by appending a new one syncronously.
+         */
+        // After getting your messages.
+        if (!shouldScroll) {
+            scrollToBottom();
+        }
+    });
+
+    // make new game
+    $('#newgame').click(function() {
+        // socket.emit('chat message', $('#m').val());
+        socket.emit('shuffle', 'shuffle a new deck');
+        // $('#m').val('');
+        return false;
+    });
+
+    // make new game
+    $('#drawCards').click(function() {
+        socket.emit('chat message', "player " + socket.id + ' wants cards');
+        drawCards(5);
+        return false;
+    });
+
+    function drawCards(qty) {
+        socket.emit('drawCards', qty);
+    }
+
+    socket.on('New Deck', function(freshDeck) {
+        console.log("you have a new deck");
+        console.log(freshDeck);
+        deck = freshDeck;
+
+        // printAllCards(deck);
+    });
+
+    socket.on('players', function(players) {
+        console.log("list of players" + players);
+        board.players = players;
+
+        updateBoard();
+
+    });
+
+
+    socket.on('receiveCards', function(cards) {
+
+        //myHand.push(cards);
+        //console.log(myHand);
+        for (var i = 0; i < cards.length; i++) {
+            board.myHand.push(cards[i]);
+            console.log('pushed' + cards[i])
+        }
+
+        updateBoard();
+    });
+
+    function findClientsSocket(roomId, namespace) {
+        var res = []
+            // the default namespace is "/"
+            ,
+            ns = io.of(namespace || "/");
+
+        if (ns) {
+            for (var id in ns.connected) {
+                if (roomId) {
+                    var index = ns.connected[id].rooms.indexOf(roomId);
+                    if (index !== -1) {
+                        res.push(ns.connected[id]);
+                    }
+                } else {
+                    res.push(ns.connected[id]);
+                }
+            }
+        }
+        return res;
+    }
+    </script>
+</body>
+
 </html>
