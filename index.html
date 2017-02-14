@@ -1,0 +1,328 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Monopoly Deal Online</title>
+    <link rel="stylesheet" src="css/style.css">
+    <style>
+    body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica';
+    margin-bottom: 160px;
+    font-size: 12px;
+    background-color: #3a4242;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+.chat {
+    overflow: hidden;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    max-height: 200px;
+    position: fixed;
+    background-color: #fcfcfc;
+    border-top: 2px solid #ccc;
+    font-size: .75em;
+}
+
+.users {
+    float: right;
+    margin-right: 1.5em;
+}
+
+form {
+    padding: 4px;
+    bottom: 0;
+    display: flex;
+}
+
+form input {
+    border: 0;
+    border-radius: 2px;
+    padding: 10px;
+}
+
+form button {
+    background: rgb(130, 224, 255);
+    border: none;
+    padding: 10px;
+    margin-right: 8px;
+    margin-left: 4px;
+    border-radius: 2px;
+}
+
+.chatInput form:focus {
+    outline: none;
+}
+
+.chatInput {
+    display: flex;
+    background-color: #999;
+}
+
+.changeUserName input {
+    width: 110px;
+    background-color: #eee;
+    color: #000;
+}
+
+.messageForm {
+    flex-grow: 1;
+}
+
+.messageForm input {
+    width: 100%;
+}
+
+#messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: 56px;
+    overflow-y: auto;
+    flex-grow: 2;
+}
+
+#messages li {
+    padding: 5px 10px;
+}
+
+#messages li:nth-child(odd) {
+    background: #eee;
+}
+
+#players{width: 100px;}
+#players li{list-style: none;}
+
+#playersCards{
+    flex-direction: column;
+    margin: 10px;
+}
+
+.player:nth-child(0) {
+    background: #3F9AAF;
+}
+
+.player:nth-child(1) {
+    background: #7FC7AF;
+}
+.player:nth-child(2) {
+    background: #DAD8A7;
+}
+
+.player:nth-child(3) {
+    background: #FF9E9D;
+}
+.player:nth-child(4) {
+    background: #DAD8A7;
+}
+.player:nth-child(5) {
+    background: #ED5276;
+}
+
+.player{
+    /*other players*/
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.player.my-cards{
+    background-color: rgba(255,255,255,.8);
+    order: 99;
+}
+
+.card {
+    width: 120px;
+    height: 150px;
+    border-radius: 4px;
+    margin: 5px;
+    padding: 2px;
+    padding-top: 25px;
+    text-align: center;
+    flex-shrink: 0;
+    border: 6px solid #fff;
+    position: relative;
+}
+
+.name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.hand .flex-container{justify-content: center;}
+
+.hand .card{opacity: .5}
+.my-cards .hand .card {opacity: 1;}
+.card.card-draw{
+    background-color: #b50b0b;
+    color: #fff;
+    cursor: pointer;
+}
+.card.card-center{
+    border-color: rgba(0,0,0,.2);
+}
+.card.card-outline{
+    background-color: transparent;
+    border-color: rgba(0,0,0,.2);
+}
+
+.actions {
+    position: absolute;
+    bottom: 2px;
+    width: 100%;
+}
+
+.actions a{
+    display: block;
+    cursor: pointer;
+}
+
+.bank-value .money-sign {
+    font-size: .5em;
+    border: 0;
+    top: -2.5px;
+    position: relative;
+    left: -5px;
+    top: -5px;
+}
+
+.card .bank-value {
+    background-color: #fff;
+    border-radius: 100%;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    line-height: 33px;
+}
+
+.card > .desc {
+    font-size: .75em;
+}
+
+.rent {padding: 0 15px;}
+
+.rentValue {
+    text-align: right;
+    padding: 0 10;
+    border-bottom: 2px solid #000;
+    border-bottom-style: dotted;
+}
+
+
+.bank, .inPlay, .hand {
+    background-color: rgba(0,0,0,.05);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.my-cards .bank, .inPlay, .my-cards .hand{
+    min-height: 200px;
+}
+
+.bank {
+    flex-grow: 1;
+    justify-content: center;
+    text-align: center;
+}
+
+
+
+.hand .card{
+    transform: scale(.5);
+}
+
+.my-cards .hand .card{
+    transform: scale(1);
+}
+
+.hand{
+    margin-top: 15px;
+}
+
+.inPlay {
+    flex-grow: 2;
+    flex-wrap: wrap;
+    margin-right: 15px;
+}
+
+.my-cards .hand{
+    min-height: 150px;
+}
+
+.inPlay h4{
+    text-align: left;
+    color: #969696;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.42);
+}
+
+#centerCard .actions {display: none;}
+
+.center-children {
+    text-align: center;
+    justify-content: center;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#chat-input{
+    background-color: #ccc;
+}
+
+#chat-input input{
+    flex-grow: 1;
+}
+
+
+
+
+
+</style>
+</head>
+
+<body>
+    <div id="debug"></div>
+    <div class="flex-container center-children">
+        <div class="card card-draw" id="drawCards">Draw Cards</div>
+        <div id="centerCard"><div class="card card-center"></div></div>
+    </div>
+    <div class="stats">
+        Turn:
+        <div id="turn"></div>
+        Action:
+        <div id="action"></div>
+    </div>
+
+    <div id="playersCards" class="flex-container center-children">
+    </div>
+    
+    <div class="chat">
+        <div class="flex-container message-container">
+            <ul id="messages"></ul>
+            <div id="players">Players</div>
+        </div>
+        <div id="chat-input">
+            <form action="" class="flex-container">
+                <input id="m" autocomplete="off" />
+                <button>Send</button>
+            </form>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="js/frontend.js"></script>
+</body>
+
+</html>

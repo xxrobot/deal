@@ -1,0 +1,181 @@
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica';
+    margin-bottom: 112px;
+    font-size: 16px;
+    background-color: #3a4242;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+.chat {
+    overflow: hidden;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    max-height: 200px;
+    position: fixed;
+    background-color: #fcfcfc;
+    border-top: 2px solid #ccc;
+    font-size: .75em;
+    position: absolute;
+}
+
+.users {
+    float: right;
+    margin-right: 1.5em;
+}
+
+form {
+    padding: 4px;
+    bottom: 0;
+    display: flex;
+}
+
+form input {
+    border: 0;
+    border-radius: 2px;
+    padding: 10px;
+}
+
+form button {
+    background: rgb(130, 224, 255);
+    border: none;
+    padding: 10px;
+    margin-right: 8px;
+    margin-left: 4px;
+    border-radius: 2px;
+}
+
+.chatInput form:focus {
+    outline: none;
+}
+
+.chatInput {
+    display: flex;
+    background-color: #999;
+}
+
+.changeUserName input {
+    width: 110px;
+    background-color: #eee;
+    color: #000;
+}
+
+.messageForm {
+    flex-grow: 1;
+}
+
+.messageForm input {
+    width: 100%;
+}
+
+.messages {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: 112px;
+    overflow-y: auto;
+}
+
+.messages li {
+    padding: 5px 10px;
+}
+
+.messages li:nth-child(odd) {
+    background: #eee;
+}
+
+
+.card {
+    width: 100px;
+    background-color: gray;
+    border-radius: 4px;
+    height: 150px;
+    margin: 5px;
+    padding: 2px;
+    padding-top: 30px;
+    text-align: center;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    position: relative;
+}
+
+.card.card-outline{
+	background-color: transparent;
+	border-color: rgba(0,0,0,.2);
+}
+
+.card .money {
+    font-size: .5em;
+    border: 0;
+    top: -2.5px;
+    position: relative;
+    left: -5px;
+}
+
+.card .bankValue {
+    background-color: #fff;
+    border-radius: 100%;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 33px;
+}
+
+.card > .desc {
+    font-size: .5em;
+}
+
+.myBoard,
+#myHand {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.bank {
+    flex-grow: 1;
+    justify-content: center;
+    text-align: center;
+}
+
+#myBank {
+    justify-content: center;
+    display: flex;
+}
+
+#inPlay {
+    flex-grow: 2;
+}
+
+.center-children {
+    text-align: center;
+    justify-content: center;
+}
+
+.flexContainer {
+    display: flex;
+}
+
+.chat-input {
+    flex-grow: 1;
+}
+
+.action {
+    border: 1px solid orange;
+}
+
+.property {
+    border: 1px solid black;
+}
+
+.money {
+    border: 1px solid black;
+}
