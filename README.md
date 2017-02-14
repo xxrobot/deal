@@ -12,6 +12,23 @@ visit localhost:3000
 Click "New Game"
 Click "Draw Cards"
 
+
+#Features so far.
+* Create a full deck
+* Shuffle Deck
+* Chat with other players
+* Pick up cards from deck to hand
+* Add money cards to bank
+* Add cards to inPlay 
+* Play a card into center
+
+## TO DO
+* everything. 
+* It's my birthday
+* Rent cards
+
+
+
 #Vocabulary
 const CARDS: unique individual cards
 
