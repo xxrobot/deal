@@ -455,13 +455,13 @@ var game = {
     deck: shuffle(makeDeck(CARDS)),
     players: [],
     center: [{
-    type: 'property',
-    subtype: 'Red',
-    name: 'BRAND NEW CARD',
-    bankValue: 3,
+    type: '',
+    subtype: '',
+    name: '',
+    bankValue: 0,
     desc: '',
-    qty: 1,
-    rent: [2, 3, 6]
+    qty: 0,
+    rent: []
 }],
 }
 
@@ -596,6 +596,17 @@ io.on('connection', function(socket) {
     });
 
 
+    function sendRentRequest(cardObject, recipient){
+        if(cardObject.color !== 'Rainbow'){
+            //all players need to pay rentValue
+
+            //figure out how much to charge
+            //get quantity of that color in players hand
+        }else{
+
+        }
+    }
+
     socket.on('playActionToCenter', function(arrayPosition) {
         //arrayPosition - integer
         //set backend hand for player
@@ -603,6 +614,16 @@ io.on('connection', function(socket) {
         var toCenter = game.players[id].hand.splice(arrayPosition,1)[0]; //removemove card from hand
         //game.players[id].bank = game.players[id].bank || []; //make inBank object if it doesnt exist
         game.center.push(toCenter); //add to center
+
+
+        //what did the card do?
+        if(toCenter.type=='action'){
+            console.log('card played is an action card')
+            if(toCenter.subtype == 'rent'){
+                sendRentRequest(toCenter,'recipient');
+            }
+        }
+
 
         addTurn(id);
 
@@ -612,18 +633,30 @@ io.on('connection', function(socket) {
 
     });
 
-    socket.on('play', function(arrayPosition) {
+    socket.on('play', function(arrayPosition, source, target) {
         console.log(socket.id + "has played this card");
 
         var id = getPlayerIndex(socket.id);
         var card = game.players[id].hand.splice(arrayPosition,1)[0]; //removemove card from hand
         
-        console.log('removed card from hand card')
+        console.log('removed card from hand')
         console.log(card)
 
         if (card.type == 'property') {
-            game.players[id].inPlay.push(card);
-            console.log(game.players[id].inPlay);
+
+            //target can be, newGroup or inPlay[indexNumber]
+            //make a new group in inPlay for my card
+            console.log('its a property')
+            if (target=='newGroup') {
+                game.players[id].inPlay.push([card]);
+                console.log('target is newGroup')
+            }else{
+                game.players[id].inPlay[target].push(card);
+                console.log('Pushed to group: ' + target)
+                console.log(game.players[id].inPlay)
+
+            }
+            
         }
 
         if (card.type == 'action') {
@@ -644,7 +677,8 @@ io.on('connection', function(socket) {
 
         addTurn(id);
 
-        console.log("Player " + socket.id + " added card to bank" + toBank)
+        console.log("Player " + socket.id + " added card to bank:")
+        console.log(toBank)
 
         io.emit('gameData', game);
 

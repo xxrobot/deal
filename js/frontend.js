@@ -7,6 +7,72 @@ var game = {
 
 const messages = document.getElementById('messages');
 
+function dragstart_handler(ev) {
+ console.log("dragStart");
+ // Change the source element's background color to signify drag has started
+ // ev.currentTarget.style.border = "dashed";
+ // Set the drag's format and data. Use the event target's id for the data. Must be a string :(
+ var data = {   arrayPosition: ev.target.getAttribute('data-card-array-position'),
+                source: ev.target.getAttribute('data-source'),
+                source: ev.target.getAttribute('data-group'),
+                sourceId: ev.target.id}
+
+ var jsonData = JSON.stringify(data);
+
+ ev.dataTransfer.setData("text/plain", jsonData);
+}
+
+function dragover_handler(ev) {
+ console.log("dragOver");
+ ev.preventDefault();
+}
+
+function drop_handler(ev) {
+ console.log("Drop");
+ ev.preventDefault();
+ // Get the data, which is the id of the drop target, convert json back to object
+ var data = ev.dataTransfer.getData("text");
+ var dataObj = JSON.parse(data);
+
+ console.log(dataObj)
+ //tell backend i moved card from hand to inplay
+
+    playCard(dataObj.arrayPosition, dataObj.source,'newGroup')
+
+ ev.target.appendChild(document.getElementById(dataObj.sourceId));
+ // Clear the drag data cache (for all formats/types)
+ ev.dataTransfer.clearData();
+}
+
+
+function drop_handler_add_to_group(ev) {
+ console.log("Drop");
+ ev.preventDefault();
+ // Get the data, which is the id of the drop target, convert json back to object
+ var data = ev.dataTransfer.getData("text");
+ var dataObj = JSON.parse(data);
+
+ console.log(dataObj)
+ //tell backend i moved card from hand to inplay
+
+    playCard(dataObj.arrayPosition, dataObj.source, ev.target.getAttribute('data-group'))
+    console.log("group:" + ev.target.getAttribute('data-group'))
+
+ ev.target.appendChild(document.getElementById(dataObj.sourceId));
+ // Clear the drag data cache (for all formats/types)
+ ev.dataTransfer.clearData();
+}
+
+function drop_handler_bank(ev) {
+    ev.preventDefault();
+    // Get the data, which is the id of the drop target, convert json back to object
+    var data = ev.dataTransfer.getData("text");
+    var dataObj = JSON.parse(data);
+    addToBank(dataObj.arrayPosition)
+    ev.target.appendChild(document.getElementById(dataObj.sourceId));
+    ev.dataTransfer.clearData();// Clear the drag data cache (for all formats/types)
+}
+
 function updateGame(data) {
     console.log('I need to update: ' + data.location)
     socket.emit('chat message', 'i need to update ' + data.location);
@@ -37,7 +103,7 @@ function updateGame(data) {
             if(card.type =='property' && card.subtype != 'wild'
                                       && card.subtype != 'house'
                                       && card.subtype != 'hotel'){
-                for (var i=0;i<card.rent.length;i++){
+                for (var i = 0; i<card.rent.length;i++){
                     output += '<div class="rentValue">M' +card.rent[i]+ '</div>';
                 }
             }
@@ -46,14 +112,33 @@ function updateGame(data) {
 
         //        game.players[playerIndex].hand = game.players[playerIndex].hand || []; //make inHand object
 
-        function printCards(cards){
+        function printCards(cards,source){
             var output ='';
-            
-            // console.log(cards);
-            for(var j=0; j<cards.length;j++){
 
+            if(source=='inPlay'){
+                //you will have cards inside arrays, sorry.
+                for(var i=0; i<cards.length;i++){
+                    output += '<div class="card card-group" id="group'+[i]+'" ondrop="drop_handler_add_to_group(event);" ondragover="dragover_handler(event);">';
+                    for(var j=0; j<cards[i].length;j++){
+                        console.log('itering thru cards')
+                        console.log(cards[i][j])
+                        var desc = cards[i][j].desc || '';
+                        output += '<div id="cardId'+[j]+'"  data-group='+[i]+' data-source='+source+' data-card-array-position='+[i][j]+' class="card card-'+cards[i][j].type+' subtype-'+cards[j].subtype+'" ondragstart="dragstart_handler(event);" draggable="true"">' +
+                                    '<div class="bank-value"><div class="money-sign"></div>' + cards[i][j].bankValue + '</div>' +
+                                    '<div class="name">' + cards[i][j].name + '</div>' +
+                                    '<div class="desc">' + desc + '</div>' +
+                                    '<div class="rent">' + getRents(cards[i][j]) + '</div>' + 
+                                    '<div class="actions">' + getActions(cards[i][j].type, j) + '</div>' +
+                                    '</div>';
+                    }
+                    output += "</div>";
+                }//end inplay array
+            return output;
+            }//end if statement for inPlay
+
+            for(var j=0; j<cards.length;j++){
                 var desc = cards[j].desc || '';
-                output += '<div class="card card-'+cards[j].type+'">' +
+                output += '<div id="cardId'+[j]+'"  data-source='+source+' data-card-array-position='+[j]+' class="card card-'+cards[j].type+' subtype-'+cards[j].subtype+'" ondragstart="dragstart_handler(event);" draggable="true"">' +
                             '<div class="bank-value"><div class="money-sign"></div>' + cards[j].bankValue + '</div>' +
                             '<div class="name">' + cards[j].name + '</div>' +
                             '<div class="desc">' + desc + '</div>' +
@@ -64,26 +149,36 @@ function updateGame(data) {
             return output;
         }
 
+        function printProperties(cards){
+            for(var j=0; j<cards.length;j++){
+                console.log(cards[j])
+                return printCards(cards[j])
+            }
+        }
+
+
+
         $('#playersCards').empty();
-            for (var i = 1; i < game.players.length; i++) {
+            for (var i = 0; i < game.players.length; i++) {
                 $('#playersCards').append('<div id="player-' + game.players[i].id + '" class="player">' +
                     '<div class="player-name">' + game.players[i].id + '</div>' +
                     '<div class="player-name">' + game.players[i].turn + '</div>' +
                     '<div class="flex-container">' +
                         '<div class="inPlay"><h4>IN PLAY</h4>'+
                             '<div class="flex-container">'+
-                            printCards(game.players[i].inPlay)+
+                            printCards(game.players[i].inPlay,'inPlay')+
+                            '<div class="card card-group" id="newGroup" ondrop="drop_handler(event);" ondragover="dragover_handler(event);"></div>'+
                             '</div>'+
                         '</div>' +
-                        '<div class="bank"><h4>BANK</h4>'+
-                            '<div class="flex-container">'+
-                            printCards(game.players[i].bank)+
+                        '<div class="bank"  ondrop="drop_handler_bank(event);" ondragover="dragover_handler(event);"><h4>BANK</h4>'+
+                            '<div class="flex-container" >'+
+                            printCards(game.players[i].bank,'bank')+
                             '</div>'+
                         '</div>' +
                     '</div>' +
                     '<div class="hand hand-' + game.players[i].id + '"><h4>HAND</h4>' +
                         '<div class="flex-container">'+
-                            printCards(game.players[i].hand) +
+                            printCards(game.players[i].hand,'hand') +
                         '</div">'+
                     '</div>' +
                     '</div>' +
@@ -103,7 +198,7 @@ function updateGame(data) {
 
     // Chat
     $('#players').empty();
-    for (var i = 1; i < game.players.length; i++) {
+    for (var i = 0; i < game.players.length; i++) {
         $('#players').append($('<li>').text(game.players[i].id));
     }
 
@@ -122,34 +217,6 @@ function findWithAttr(array, attr, value) {
 }
 
 
-function updateBoard() {
-
-    function actions(type, arrayPosition) {
-        switch (type) {
-            case 'money':
-                return '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
-                break;
-            case 'action':
-                return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>' +
-                    '<a href="#" onClick="addToBank(' + i + ')" class="addToBank">Add to Bank</a>';
-                break;
-            case 'property':
-                return '<a href="#" onClick="playCard(' + i + ')" class="playCard">Play Card</a>';;
-                break;
-        }
-    }
-    $('#myHand').empty();
-    for (var i = 0; i < board.myHand.length; i++) {
-
-        $('#myHand').append('<div class="card ' + board.myHand[i].type + '">' +
-            board.myHand[i].name +
-            '<div class="desc">' + board.myHand[i].desc + '</div>' +
-            '<div class="actions">' +
-            actions(board.myHand[i].type, i) +
-            '</div>' +
-            '</div>');
-    }
-}
 
 
 function endTurn() {
@@ -160,13 +227,13 @@ function addToBank(arrayPosition) {
     socket.emit('addToBank', arrayPosition);
 }
 
-function playCard(arrayPosition) {
-    socket.emit('play', arrayPosition);
+function playCard(arrayPosition,source,target) {
+    socket.emit('play', arrayPosition, source, target);
 }
 
 function playActionToCenter(arrayPosition) {
     //INTHECENTER
-    console.log('position of playtocentercard: ' +arrayPosition)
+    console.log('position of playtocentercard: ' + arrayPosition)
     socket.emit('playActionToCenter', arrayPosition);
 }
 
