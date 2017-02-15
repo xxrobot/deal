@@ -158,6 +158,8 @@ form button {
     padding-top: 0;
     height: auto;
     width: auto;
+    background-color: rgba(0,0,0,.2);
+    border-color:transparent;
 }
 
 .droppable{
@@ -313,7 +315,8 @@ form button {
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.42);
 }
 
-#centerCard .actions {display: none;}
+#centerCard .actions, #centerCard .bank-value {display: none;}
+#centerCard .card{ border-color: transparent; background-color: rgba(0,0,0,.2)}
 
 .center-children {
     text-align: center;
@@ -344,7 +347,7 @@ form button {
     <div id="debug"></div>
     <div class="flex-container center-children">
         <div class="card card-draw" id="drawCards">Draw Cards</div>
-        <div id="centerCard"><div class="card card-center"></div></div>
+        <div id="centerCard" ondrop="drop_handler_center(event);" ondragover="dragover_handler(event);"><div class="card card-center"></div></div>
     </div>
     <div class="stats">
         Turn:

@@ -580,7 +580,7 @@ io.on('connection', function(socket) {
                 game.players[playerIndex].hand.push(card);//update backend state
 
                 console.log('added card to user')
-                console.log(game.players[playerIndex].hand)
+                // console.log(game.players[playerIndex].hand)
             } else {
                 io.emit('chat message', "no more cards!");
                 return
@@ -633,12 +633,50 @@ io.on('connection', function(socket) {
 
     });
 
+
+    socket.on('playProperty', function(arrayPosition, source, sourceGroup, targetGroup) {
+        console.log('a property is played')
+        var id = getPlayerIndex(socket.id);
+
+        //where to take the card from
+        switch (source) {
+            case 'hand':
+                var card = game.players[id].hand.splice(arrayPosition,1)[0]; //removemove card from hand
+                break;
+            case 'inPlay':
+                console.log('looking for : ', arrayPosition, source, sourceGroup, targetGroup)
+                console.log('inside of', game.players[id].inPlay[sourceGroup])
+                var card = game.players[id].inPlay[sourceGroup].splice(arrayPosition,1)[0]; //removemove card from inPlay
+                console.log('card is: ', card)
+                
+
+                break; 
+            default: 
+                var card = game.players[id].hand.splice(arrayPosition,1)[0]; //removemove card from hand
+        }
+
+        //where to put it
+        if (targetGroup=='newGroup') {
+            game.players[id].inPlay.push([card]);
+            console.log('target is newGroup')
+        }else{
+            console.log('Pushed to group: ' + targetGroup)
+
+            game.players[id].inPlay[targetGroup].push(card);
+
+        }
+
+            console.log(game.players[id].inPlay)
+        io.emit('gameData',game);
+
+  });
+
+
     socket.on('play', function(arrayPosition, source, target) {
         console.log(socket.id + "has played this card");
 
         var id = getPlayerIndex(socket.id);
         var card = game.players[id].hand.splice(arrayPosition,1)[0]; //removemove card from hand
-        
         console.log('removed card from hand')
         console.log(card)
 
@@ -646,16 +684,7 @@ io.on('connection', function(socket) {
 
             //target can be, newGroup or inPlay[indexNumber]
             //make a new group in inPlay for my card
-            console.log('its a property')
-            if (target=='newGroup') {
-                game.players[id].inPlay.push([card]);
-                console.log('target is newGroup')
-            }else{
-                game.players[id].inPlay[target].push(card);
-                console.log('Pushed to group: ' + target)
-                console.log(game.players[id].inPlay)
-
-            }
+            
             
         }
 
